@@ -6,14 +6,12 @@ import sys
 import actionlib
 import rospy
 import roslaunch
-import tf2_ros
-import tf2_geometry_msgs
 
 from behavior_manager_server.support_behavior_graph import SupportBehaviorGraph
 from behavior_manager_server.support_behavior_graph import GraphEdge
 from behavior_manager_server.support_behavior_graph import GraphNode
 from behavior_manager_server.base_behavior import load_behavior_class
-from behavior_manager_server.base_behavior import BaseBehavior
+from behavior_manager_server.base_client import load_client_class
 
 from std_msgs.msg import String
 from behavior_manager_msgs.msg import ExecuteBehaviorsAction
@@ -31,21 +29,24 @@ class BehaviorManagerNode(object):
         raw_edges = rospy.get_param('~map/edges')
         raw_nodes = rospy.get_param('~map/nodes')
         initial_node_id = rospy.get_param('~initial_node_id')
+        client_class = rospy.get_param('~client_class')
 
         # check initial node is valid
         if initial_node_id not in raw_nodes:
-            rospy.logerr('Node id {} is not in node list.'.format(initial_node_id))
+            rospy.logerr(
+                'Node id {} is not in node list.'.format(initial_node_id))
             sys.exit(1)
 
         # navigation dictonary
         self.edges = raw_edges
         self.nodes = raw_nodes
         self.graph = SupportBehaviorGraph(raw_edges, raw_nodes)
-        self.current_node = GraphNode(initial_node_id, self.nodes[initial_node_id])
+        self.current_node = GraphNode(
+            initial_node_id, self.nodes[initial_node_id])
         self.pre_edge = GraphEdge()
 
         # Load client class
-        self.client = BaseClient()
+        self.client = load_client_class(client_class)
 
         # publisher
         self.pub_current_node_id = rospy.Publisher(
@@ -77,7 +78,8 @@ class BehaviorManagerNode(object):
         rate = rospy.Rate(1)
         while not rospy.is_shutdown():
             rate.sleep()
-            self.pub_current_node_id.publish(String(data=self.current_node.node_id))
+            self.pub_current_node_id.publish(
+                String(data=self.current_node.node_id))
 
     def handler_reset_current_node_id(self, req):
 
@@ -95,44 +97,60 @@ class BehaviorManagerNode(object):
         current_graph = copy.deepcopy(self.graph)
         while True:
             # path calculation
-            path = current_graph.calcPath(self.current_node.node_id, goal.target_node_id)
+            path = current_graph.calcPath(
+                self.current_node.node_id, goal.target_node_id)
             if path is None:
-                rospy.logerr('No path from {} to {}'.format(self.current_node.node_id, goal.target_node_id))
-                result = ExecuteBehaviorsResult(success=False, message='No path found')
-                self.server_execute_behaviors.set_aborted(result)
+                rospy.logerr('No path from {} to {}'.format(
+                    self.current_node.node_id, goal.target_node_id))
+                self.server_execute_behaviors.set_aborted(
+                    ExecuteBehaviorsResult(success=False, message='No path found'))
                 return
             else:
                 success_navigation = True
                 for edge in path:
                     rospy.loginfo('Navigating Edge {}'.format(edge))
                     try:
-                        success = self.navigate_edge(edge, self.pre_edge, self.client, self.graph)
+                        success = self.navigate_edge(
+                            edge, self.pre_edge, self.client, self.graph)
                         if success:
                             rospy.loginfo('Edge {} succeeded.'.format(edge))
-                            self.current_node = GraphEdge(edge.node_id_to, self.nodes[edge.node_id_to])
-                            self.server_execute_behaviors.publish_feedback(ExecuteBehaviorsFeedback(current_node_id=self.current_node_id))
+                            self.current_node = GraphEdge(
+                                edge.node_id_to, self.nodes[edge.node_id_to])
+                            self.server_execute_behaviors.publish_feedback(
+                                ExecuteBehaviorsFeedback(current_node_id=self.current_node.node_id))
                             self.pre_edge = edge
                         else:
-                            rospy.logwarn('Edge {} failed'.format(edge))
-                            self.server_execute_behaviors.publish_feedback(ExecuteBehaviorsFeedback(current_node_id=self.current_node_id))
-                            current_graph.remove_edge(edge.node_id_from, edge.node_id_to)
-                            success_navigation = False
-                            break
+                            rospy.logwarn(
+                                'Edge {} failed. Trying to find a new path.'.format(edge))
+                            current_graph.remove_edge(
+                                edge.node_id_from, edge.node_id_to)
+                            # Check if there is a new way.
+                            path = current_graph.calcPath(
+                                self.current_node.node_id, goal.target_node_id)
+                            if path is not None:
+                                rospy.logerr('There is no path from {} to {} with edge failure'.format(
+                                    self.current_node.node_id, goal.target_node_id))
+                                self.server_execute_behaviors.set_aborted(ExecuteBehaviorsResult(
+                                    success=False, message='There is no path from {} to {} with edge failure'.format(self.current_node.node_id, goal.target_node_id)))
+                                return
+                            else:
+                                self.server_execute_behaviors.publish_feedback(
+                                    ExecuteBehaviorsFeedback(current_node_id=self.current_node.node_id))
+                                success_navigation = False
+                                break
                     except Exception as e:
-                        rospy.logerr('Got an error while navigating edge {}: {}'.format(edge, e))
+                        rospy.logerr(
+                            'Got an error while navigating edge {}: {}'.format(edge, e))
+                        self.server_execute_behaviors.set_aborted(ExecuteBehaviorsResult(
+                            success=False, message='Got an error while navigating edge {}: {}'.format(edge, e)))
                         self.pre_edge = GraphEdge()
-                        result = ExecuteBehaviorsResult(
-                            success=False,
-                            message='Got an error while navigating edge {}: {}'.format(edge, e))
-                        self.server_execute_behaviors.set_aborted(result)
                         return
-
                 if success_navigation:
                     break
 
         rospy.loginfo('Goal Reached!')
-        result = ExecuteBehaviorsResult(success=True, message='Goal Reached.')
-        self.server_execute_behaviors.set_succeeded(result)
+        self.server_execute_behaviors.set_succeeded(
+            ExecuteBehaviorsResult(success=True, message='Goal Reached.'))
         return
 
     def navigate_edge(self, edge, pre_edge, client, graph):
