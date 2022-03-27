@@ -1,0 +1,12 @@
+<launch>
+    <node pkg="behavior_manager_server" type="behavior_manager_node.py" name="behavior_manager_node" output="screen">
+
+        <rosparam ns="map/edges" file="$(find behavior_manager_server)/config/edges.yaml" subst_value="true" />
+        <rosparam ns="map/nodes" file="$(find behavior_manager_server)/config/nodes.yaml" subst_value="true" />
+
+        <rosparam subst_value="true">
+            initial_node_id: 'simple_node_01'
+            client_class: 'behavior_manager_server.base_client.SimpleClient'
+        </rosparam>
+    </node>
+</launch>

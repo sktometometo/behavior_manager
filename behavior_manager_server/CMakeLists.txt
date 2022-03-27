@@ -18,5 +18,5 @@ catkin_install_python(PROGRAMS node_scripts/behavior_manager_node.py
 if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
     add_rostest(test/test_behavior_manager_with_failed_edge.test)
-    add_rostest(test/test_behavior_manager_without_failed_edge.test)
+    #add_rostest(test/test_behavior_manager_without_failed_edge.test)
 endif()
