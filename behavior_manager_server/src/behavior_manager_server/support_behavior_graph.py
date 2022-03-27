@@ -9,14 +9,12 @@ class GraphEdge:
                  node_id_from=None,
                  node_id_to=None,
                  behavior_type=None,
-                 cost=None,
                  properties=None,
                  response=None
                  ):
         self.node_id_from = node_id_from
         self.node_id_to = node_id_to
         self.behavior_type = behavior_type
-        self.cost = cost
         self.properties = properties
         self.response = response
 
@@ -55,7 +53,6 @@ class SupportBehaviorGraph:
             self.add_edge(raw_edge['from'],
                           raw_edge['to'],
                           raw_edge['behavior_type'],
-                          int(raw_edge['cost']),
                           raw_edge['args'])
 
         for key, raw_node in raw_nodes.items():
@@ -84,19 +81,16 @@ class SupportBehaviorGraph:
                  node_id_from,
                  node_id_to,
                  behavior_type,
-                 cost,
                  args):
         # TODO: もしすでにedgeがあれば,適切に上書きするようにする
         # NOTICE: node と edge で整合性を保つようには実装されていない
         edge = GraphEdge(node_id_from,
                          node_id_to,
                          behavior_type,
-                         cost,
                          args)
         self.edges[node_id_from, node_id_to] = edge
         self.network.add_edge(node_id_from,
-                              node_id_to,
-                              weight=cost)
+                              node_id_to)
 
     def remove_node(self,
                     node_id):
