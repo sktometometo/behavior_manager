@@ -1,0 +1,15 @@
+- from: 'simple_node_01'
+  to: 'simple_node_02'
+  behavior_type: 'behavior_manager_server.base_behavior.SimpleBehavior'
+  args:
+    success: True
+- from: 'simple_node_02'
+  to: 'simple_node_03'
+  behavior_type: 'behavior_manager_server.base_behavior.SimpleBehavior'
+  args:
+    success: True
+- from: 'simple_node_01'
+  to: 'simple_node_03'
+  behavior_type: 'behavior_manager_server.base_behavior.SimpleBehavior'
+  args:
+    success: False

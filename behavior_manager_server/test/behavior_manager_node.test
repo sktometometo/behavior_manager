@@ -1,15 +1,16 @@
 <launch>
     <node pkg="behavior_manager_server" type="behavior_manager_server.py" name="behavior_manager_server" output="screen">
 
-        <rosparam ns="map" file="$(find behavior_manager_server)/test/edges.yaml" subst_value="true" />
-        <rosparam ns="map" file="$(find behavior_manager_server)/test/nodes.yaml" subst_value="true" />
+        <rosparam ns="map/edges" file="$(find behavior_manager_server)/test/edges.yaml" subst_value="true" />
+        <rosparam ns="map/nodes" file="$(find behavior_manager_server)/test/nodes.yaml" subst_value="true" />
 
         <rosparam subst_value="true">
             initial_node_id: 'simple_node_01'
+            client_class: 'behavior_manager_server.base_client.SimpleClient'
         </rosparam>
     </node>
 
-    <test test-name="behavior_manager_test" pkg="behavior_manager_server" type="test_behavior_manager.py">
+    <test test-name="behavior_manager_test" pkg="behavior_manager_server" type="test_behavior_manager.py" output="screen">
         <remap from="~execute_behaviors" to="/behavior_manager_server/execute_behaviors" />
         <rosparam subst_value="true">
             target_node_id: 'simple_node_03'
