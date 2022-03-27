@@ -42,7 +42,11 @@ class SimpleBehavior(BaseBehavior):
         rospy.loginfo('end_node: {}'.format(end_node))
         rospy.loginfo('edge: {}'.format(edge))
         rospy.loginfo('pre_edge: {}'.format(pre_edge))
-        return True
+        if 'success' in edge.args:
+            return edge.args['success']
+        else:
+            rospy.logerr('No \'success\' field in args of edge.')
+            return False
 
     def run_final(self, start_node, end_node, edge, pre_edge):
 

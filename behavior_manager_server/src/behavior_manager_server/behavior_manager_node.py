@@ -7,9 +7,9 @@ import actionlib
 import rospy
 import roslaunch
 
-from behavior_manager_server.support_behavior_graph import SupportBehaviorGraph
-from behavior_manager_server.support_behavior_graph import GraphEdge
-from behavior_manager_server.support_behavior_graph import GraphNode
+from behavior_manager_server.behavior_graph import SupportBehaviorGraph
+from behavior_manager_server.behavior_graph import GraphEdge
+from behavior_manager_server.behavior_graph import GraphNode
 from behavior_manager_server.base_behavior import load_behavior_class
 from behavior_manager_server.base_client import load_client_class
 
@@ -37,12 +37,21 @@ class BehaviorManagerNode(object):
                 'Node id {} is not in node list.'.format(initial_node_id))
             sys.exit(1)
 
+        #
+        edge_dict = {(raw_edge['from'], raw_edge['to']): GraphEdge(
+            raw_edge['from'],
+            raw_edge['to'],
+            raw_edge['behavior_type'],
+            raw_edge['args'])
+            for raw_edge in raw_edges}
+        node_dict = {node_id: GraphNode(node_id, properties)
+                     for node_id, properties in raw_nodes.items()}
+
         # navigation dictonary
-        self.edges = raw_edges
-        self.nodes = raw_nodes
+        self.edge_dict = edge_dict
+        self.node_dict = node_dict
         self.graph = SupportBehaviorGraph(raw_edges, raw_nodes)
-        self.current_node = GraphNode(
-            initial_node_id, self.nodes[initial_node_id])
+        self.current_node = self.node_dict[initial_node_id]
         self.pre_edge = GraphEdge()
 
         # Load client class
@@ -84,11 +93,11 @@ class BehaviorManagerNode(object):
     def handler_reset_current_node_id(self, req):
 
         node_id = req.current_node_id
-        if node_id not in self.nodes:
+        if node_id not in self.node_dict:
             rospy.logerr('Node {} is not in node list.'.format(node_id))
         else:
             rospy.logdebug('Current Node is set to {}'.format(node_id))
-            self.current_node = GraphNode(node_id, self.nodes[node_id])
+            self.current_node = self.node_dict[node_id]
             self.pre_edge = GraphEdge()
             return ResetCurrentNodeResponse(success=True)
 
@@ -97,11 +106,11 @@ class BehaviorManagerNode(object):
         current_graph = copy.deepcopy(self.graph)
         while True:
             # path calculation
-            path = current_graph.calcPath(
+            path, message = current_graph.calcPath(
                 self.current_node.node_id, goal.target_node_id)
             if path is None:
-                rospy.logerr('No path from {} to {}'.format(
-                    self.current_node.node_id, goal.target_node_id))
+                rospy.logerr('No path from {} to {}: {}'.format(
+                    self.current_node.node_id, goal.target_node_id, message))
                 self.server_execute_behaviors.set_aborted(
                     ExecuteBehaviorsResult(success=False, message='No path found'))
                 return
@@ -114,8 +123,7 @@ class BehaviorManagerNode(object):
                             edge, self.pre_edge, self.client, self.graph)
                         if success:
                             rospy.loginfo('Edge {} succeeded.'.format(edge))
-                            self.current_node = GraphEdge(
-                                edge.node_id_to, self.nodes[edge.node_id_to])
+                            self.current_node = self.node_dict[edge.node_id_to]
                             self.server_execute_behaviors.publish_feedback(
                                 ExecuteBehaviorsFeedback(current_node_id=self.current_node.node_id))
                             self.pre_edge = edge
@@ -125,10 +133,10 @@ class BehaviorManagerNode(object):
                             current_graph.remove_edge(
                                 edge.node_id_from, edge.node_id_to)
                             # Check if there is a new way.
-                            path = current_graph.calcPath(
+                            path, message = current_graph.calcPath(
                                 self.current_node.node_id, goal.target_node_id)
                             if path is not None:
-                                rospy.logerr('There is no path from {} to {} with edge failure'.format(
+                                rospy.logerr('There is no path from {} to {} with edge failure {}'.format(
                                     self.current_node.node_id, goal.target_node_id))
                                 self.server_execute_behaviors.set_aborted(ExecuteBehaviorsResult(
                                     success=False, message='There is no path from {} to {} with edge failure'.format(self.current_node.node_id, goal.target_node_id)))
