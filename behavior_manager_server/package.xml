@@ -20,6 +20,13 @@
   <exec_depend>behavior_manager_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
+  <test_depend>actionlib</test_depend>
+  <test_depend>networkx</test_depend>
+  <test_depend>rospkg</test_depend>
+  <test_depend>rospy</test_depend>
+  <test_depend>roslaunch</test_depend>
+  <test_depend>behavior_manager_msgs</test_depend>
+  <test_depend>std_msgs</test_depend>
   <test_depend>rostest</test_depend>
 
   <export>

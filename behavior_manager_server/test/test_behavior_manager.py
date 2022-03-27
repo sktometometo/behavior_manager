@@ -28,4 +28,5 @@ class TestBehaviorManager(unittest.TestCase):
 
 if __name__ == '__main__':
     import rostest
+    rospy.init_node('test_behavior_manager_client')
     rostest.rosrun(PKG, 'test_behavior_manager', TestBehaviorManager)

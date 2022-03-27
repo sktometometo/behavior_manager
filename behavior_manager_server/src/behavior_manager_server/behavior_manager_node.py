@@ -7,7 +7,7 @@ import actionlib
 import rospy
 import roslaunch
 
-from behavior_manager_server.behavior_graph import SupportBehaviorGraph
+from behavior_manager_server.behavior_graph import BehaviorGraph
 from behavior_manager_server.behavior_graph import GraphEdge
 from behavior_manager_server.behavior_graph import GraphNode
 from behavior_manager_server.base_behavior import load_behavior_class
@@ -50,7 +50,7 @@ class BehaviorManagerNode(object):
         # navigation dictonary
         self.edge_dict = edge_dict
         self.node_dict = node_dict
-        self.graph = SupportBehaviorGraph(raw_edges, raw_nodes)
+        self.graph = BehaviorGraph(edge_dict, node_dict)
         self.current_node = self.node_dict[initial_node_id]
         self.pre_edge = GraphEdge()
 

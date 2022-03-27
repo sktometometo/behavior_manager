@@ -16,6 +16,10 @@ class GraphEdge:
         self.behavior_type = behavior_type
         self.args = args
 
+    def __str__(self):
+        'from: \'{}\', to:\'{}\', behavior_type:\'{}\', args:{}'.format(
+            self.node_id_from, self.node_id_to, self.behavior_type, self.args)
+
     def is_empty(self):
 
         return self.behavior_type is None
@@ -29,6 +33,9 @@ class GraphNode:
                  ):
         self.node_id = node_id
         self.properties = properties
+
+    def __str__(self):
+        'node_id:{}, properties:{}'.format(self.node_id, self.properties)
 
     def is_empty(self):
 
