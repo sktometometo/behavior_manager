@@ -17,7 +17,7 @@ class BaseClient(object):
         self.client_name = client_name
 
 
-class SimpleClient(object):
+class SimpleClient(BaseClient):
 
     def __init__(self, client_name):
 
