@@ -116,6 +116,7 @@ class BehaviorManagerNode(object):
                 return
             else:
                 success_navigation = True
+                rospy.loginfo('Path is {}'.format(path))
                 for edge in path:
                     rospy.loginfo('Navigating Edge {}'.format(edge))
                     try:
@@ -135,7 +136,7 @@ class BehaviorManagerNode(object):
                             # Check if there is a new way.
                             path, message = current_graph.calcPath(
                                 self.current_node.node_id, goal.target_node_id)
-                            if path is not None:
+                            if path is None:
                                 rospy.logerr('There is no path from {} to {} with edge failure {}'.format(
                                     self.current_node.node_id, goal.target_node_id))
                                 self.server_execute_behaviors.set_aborted(ExecuteBehaviorsResult(
