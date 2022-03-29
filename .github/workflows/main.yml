@@ -1,7 +1,9 @@
 name: CI
 on:
   push:
+    branches: main
   pull_request:
+    branches: main
   schedule:
     - cron: "0 0 * * *"
 jobs:
@@ -10,17 +12,11 @@ jobs:
       matrix:
         env:
           - ROS_DISTRO: melodic
-            ROS_REPO: testing
-            CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Debug'
-          - ROS_DISTRO: melodic
-            ROS_REPO: testing
-            CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Release'
-          - ROS_DISTRO: noetic
-            ROS_REPO: testing
+            ROS_REPO: main
             CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Debug'
           - ROS_DISTRO: noetic
-            ROS_REPO: testing
-            CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Release'
+            ROS_REPO: main
+            CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Debug'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
