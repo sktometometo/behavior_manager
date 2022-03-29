@@ -128,7 +128,7 @@ class ElevatorBehavior(BaseBehavior):
 
         # launch recognition launch
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, True)
-        roslaunch_path = rospkg.RosPack().get_path('spot_basic_behaviors') +\
+        roslaunch_path = rospkg.RosPack().get_path('jsk_spot_basic_behaviors') +\
             '/launch/elevator_detection.launch'
         roslaunch_cli_args = [roslaunch_path]
         roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(
@@ -396,7 +396,7 @@ class CrosswalkBehavior(BaseBehavior):
 
         # launch recognition launch
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, True)
-        roslaunch_path = rospkg.RosPack().get_path('spot_basic_behaviors') +\
+        roslaunch_path = rospkg.RosPack().get_path('jsk_spot_basic_behaviors') +\
             '/launch/crosswalk_detection.launch'
         roslaunch_cli_args = [roslaunch_path]
         roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(
