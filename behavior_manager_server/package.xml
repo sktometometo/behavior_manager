@@ -13,14 +13,24 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>actionlib</exec_depend>
-  <exec_depend>networkx</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-networkx</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-networkx</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>roslaunch</exec_depend>
   <exec_depend>behavior_manager_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
+  <build_depend>actionlib</build_depend>
+  <build_depend condition="$ROS_PYTHON_VERSION == 2">python-networkx</build_depend>
+  <build_depend condition="$ROS_PYTHON_VERSION == 3">python3-networkx</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roslaunch</build_depend>
+  <build_depend>behavior_manager_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+
   <test_depend>actionlib</test_depend>
-  <test_depend>networkx</test_depend>
+  <test_depend condition="$ROS_PYTHON_VERSION == 2">python-networkx</test_depend>
+  <test_depend condition="$ROS_PYTHON_VERSION == 3">python3-networkx</test_depend>
   <test_depend>rospy</test_depend>
   <test_depend>roslaunch</test_depend>
   <test_depend>behavior_manager_msgs</test_depend>
